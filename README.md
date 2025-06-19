@@ -56,17 +56,3 @@ Currently, bignums are represented as `Seq<Char>` and we prove correctness for a
    ```bash
    cargo verus verify
    ```
-
-## Project Structure
-
-- `src/`
-  - `lib.rs` - Main library entry point
-  - `bn_add_seq.rs` - Implementation of big number addition operations
-
-## License
-
-[License information to be added]
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
