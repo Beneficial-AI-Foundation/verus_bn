@@ -3,6 +3,16 @@
 use vstd::prelude::*;
 
 verus! {
+/// Creates a vector from a slice starting at a given index
+fn slice_to_vec(s: &[bool], start: usize) -> Vec<bool> {
+    let mut result = Vec::new();
+    let mut i = start;
+    while i < s.len() {
+        result.push(s[i]);
+        i += 1;
+    }
+    result
+}
 /// Finds the index of the first non-zero bit starting from a given position
 fn find_first_nonzero(s: &[bool], start: usize) -> usize {
     if start >= s.len() {
@@ -24,7 +34,7 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
         if i == s.len() {
             vec![false]
         } else {
-            s[i..].to_vec()
+            slice_to_vec(s, i)
         }
     }
 }
