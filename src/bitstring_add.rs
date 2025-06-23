@@ -3,46 +3,19 @@
 use vstd::prelude::*;
 
 use vstd::math;
+use vstd::slice::{slice_subrange, slice_to_vec};
 
 verus! {
-/// Creates a vector from a slice starting at a given index
-fn drop_from_slice(s: &[bool], start: usize) -> Vec<bool> {
-    let mut result = Vec::new();
-    let mut i = start;
-    while i < s.len()
-        decreases s.len() - i
-    {
-        result.push(s[i]);
-        i += 1;
-    }
-    result
-}
 
-
-
-/// Creates a vector from the first n elements of a slice
-fn take_from_slice(s: &[bool], n: usize) -> (t: Vec<bool>)
-    ensures t.len() == math::min(s.len() as int, n as int)
-{
-    let mut result = Vec::new();
-    let mut i = 0;
-    while i < n && i < s.len()
-        invariant result.len() == i,
-                  i <= s.len(),
-                  i <= n,
-        decreases s.len() - i,
-    {
-        result.push(s[i]);
-        i += 1;
-    }
-    result
-}
 /// Finds the index of the first non-zero bit starting from a given position
-fn find_first_nonzero(s: &[bool], start: usize) -> usize
-        decreases s.len() - start
+fn find_first_nonzero(s: &[bool], start: usize) -> (i: usize)
+    ensures
+            i <= s.len()
+    decreases
+            s.len() - start
     {
     if start >= s.len() {
-        s.len()
+        s.len() // TODO Should it return a different value?
     } else if s[start] {
         start
     } else {
@@ -60,7 +33,8 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
         if i == s.len() {
             vec![false]
         } else {
-            drop_from_slice(s, i)
+            assert (0 <= i <= s.len());
+            slice_to_vec(slice_subrange(s, i, s.len()))
         }
     }
 }
@@ -79,10 +53,10 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool>
         }
     } else {
         let bit1: u8 = if !(s1.len() == 0) && s1[s1.len() -1 ] { 1 } else { 0 };
-        let rest1 = if !(s1.len() == 0) { take_from_slice(s1, s1.len()-1) } else { vec![] };
+        let rest1 = if !(s1.len() == 0) { slice_subrange(s1, 0,  s1.len()-1) } else { &[] };
 
         let bit2: u8 = if !(s2.len() == 0) && s2[s2.len() -1 ] { 1 } else { 0 };
-        let rest2 = if !(s2.len() == 0) { take_from_slice(s2, s2.len()-1) } else { vec![] };
+        let rest2 = if !(s2.len() == 0) { slice_subrange(s2, 0, s2.len()-1) } else { &[] };
 
         let sum: u8 = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2 == 1;
