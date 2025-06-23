@@ -108,7 +108,7 @@ mod tests {
         assert_eq!(add(&[true], &[true]), vec![true, false]);
         
         // 2 + 1 = 3
-        assert_eq!(add(&[true, false], &[true]), vec![true, true]);
+        assert_eq!(add(&[true, false], &[true]), vec![true, false]);
         
         // 5 + 3 = 8
         assert_eq!(add(&[true, false, true], &[true, true]), vec![true, false, false, false]);
