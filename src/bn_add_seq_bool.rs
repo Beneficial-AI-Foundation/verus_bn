@@ -1,5 +1,5 @@
-use vstd::prelude::*;
 use vstd::calc;
+use vstd::prelude::*;
 
 verus! {
 
@@ -18,7 +18,7 @@ spec fn str_to_int(s: Seq<bool>) -> nat
     } else {
         let sub_seq = s.subrange(0, s.len() as int - 1);
         let last_bit = s[s.len() as int - 1];
-        2 * str_to_int(sub_seq) + 
+        2 * str_to_int(sub_seq) +
         (if last_bit { 1nat } else { 0nat })
     }
 }
@@ -214,7 +214,7 @@ proof fn find_first_nonzero_all_zeros_before(s: Seq<bool>, start: nat)
     }
 }
 
-spec fn normalize_bit_string(s: Seq<bool>) -> (result: Seq<bool>)   
+spec fn normalize_bit_string(s: Seq<bool>) -> (result: Seq<bool>)
 {
     if s.len() == 0 {
         seq![(false)]
@@ -234,7 +234,7 @@ proof fn normalize_bit_string_valid(s: Seq<bool>)
         str_to_int(s) == str_to_int(normalize_bit_string(s)),
 {
     let result = normalize_bit_string(s);
-    
+
     if s.len() == 0 {
         // Case: empty input
         assert(result == seq![(false)]);
@@ -267,14 +267,14 @@ proof fn normalize_bit_string_valid(s: Seq<bool>)
             // Case: substring from first non-zero
             let substring = s.subrange(i as int, s.len() as int);
             assert(result == substring);
-            
+
             // Prove that substring length is valid
             assert(0 <= i);
             assert(i <= s.len());
             assert(substring.len() == s.len() as int - i as int) by {
                 // This should now be provable since we know i is in bounds
             };
-            
+
             // Prove value preservation
             find_first_nonzero_all_zeros_before(s, 0);
             assert(forall|k: int| 0 <= k < i ==> !s[k]);
@@ -297,16 +297,16 @@ spec fn add_helper(s1: Seq<bool>, s2: Seq<bool>, carry: nat) -> (result: Seq<boo
     } else {
         let bit1: nat = if s1.len() > 0 && s1[s1.len() as int - 1] { 1nat } else { 0nat };
         let rest1: Seq<bool> = if s1.len() > 0 { s1.subrange(0, s1.len() as int - 1) } else { seq![] };
-        
+
         let bit2: nat = if s2.len() > 0 && s2[s2.len() as int - 1] { 1nat } else { 0nat };
         let rest2: Seq<bool> = if s2.len() > 0 { s2.subrange(0, s2.len() as int - 1) } else { seq![] };
-        
+
         let sum: nat = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2nat == 1nat;
         let new_carry: nat = sum / 2nat;
-        
+
         add_helper(rest1, rest2, new_carry).push(new_bit)
-    }    
+    }
 }
 
 proof fn add_helper_correctness(s1: Seq<bool>, s2: Seq<bool>, carry: nat)
@@ -336,21 +336,21 @@ proof fn add_helper_correctness(s1: Seq<bool>, s2: Seq<bool>, carry: nat)
         // Recursive case
         let bit1: nat = if s1.len() > 0 && s1[s1.len() as int - 1] { 1nat } else { 0nat };
         let rest1: Seq<bool> = if s1.len() > 0 { s1.subrange(0, s1.len() as int - 1) } else { seq![] };
-        
+
         let bit2: nat = if s2.len() > 0 && s2[s2.len() as int - 1] { 1nat } else { 0nat };
         let rest2: Seq<bool> = if s2.len() > 0 { s2.subrange(0, s2.len() as int - 1) } else { seq![] };
-        
+
         let sum: nat = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2nat == 1nat;
         let new_carry: nat = sum / 2nat;
-        
+
         // Recursive call
         add_helper_correctness(rest1, rest2, new_carry);
-        
+
         // Prove value preservation
         let result = add_helper(s1, s2, carry);
         assert(result =~= add_helper(rest1, rest2, new_carry).push(new_bit));
-        
+
         calc! {
             (==)
             str_to_int(result); {
@@ -392,14 +392,14 @@ proof fn add(s1: Seq<bool>, s2: Seq<bool>) -> (result: Seq<bool>)
         // (normalized to ensure no leading zeros)
         normalize_bit_string_valid(s2);
         let result = normalize_bit_string(s2);
-        assert(str_to_int(result) == str_to_int(s1) + str_to_int(s2)); 
+        assert(str_to_int(result) == str_to_int(s1) + str_to_int(s2));
         result
     } else if s2.len() == 0 {
         // When s2 is empty, its value is 0, so we can just return s1
         // (normalized to ensure no leading zeros)
         normalize_bit_string_valid(s1);
         let result = normalize_bit_string(s1);
-        assert(str_to_int(result) == str_to_int(s1) + str_to_int(s2)); 
+        assert(str_to_int(result) == str_to_int(s1) + str_to_int(s2));
         result
     } else {
         // Perform addition using helper function and normalize the result
@@ -407,7 +407,7 @@ proof fn add(s1: Seq<bool>, s2: Seq<bool>) -> (result: Seq<bool>)
         add_helper_correctness(s1, s2, 0nat);
         normalize_bit_string_valid(intermediate);
         let result = normalize_bit_string(intermediate);
-        assert(str_to_int(result) == str_to_int(s1) + str_to_int(s2)); 
+        assert(str_to_int(result) == str_to_int(s1) + str_to_int(s2));
         result
     }
 }
