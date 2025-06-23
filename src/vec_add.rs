@@ -5,7 +5,8 @@ use vstd::slice::{slice_subrange, slice_to_vec};
 
 verus! {
 
-/// Checks if a slice is empty
+/// Checks if a slice is empty.
+/// verus doesn't support the normal is_empty function
 fn is_empty(s: &[bool]) -> (result: bool)
     ensures result == (s.len() == 0)
 {
