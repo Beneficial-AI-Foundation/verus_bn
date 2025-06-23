@@ -1,17 +1,6 @@
-/// This module implements addition on bitstrings represented as Vec<bool>
-/// The algorithm is based on the one in bn_add_seq_bool.rs but without Verus-specific code
+//! This module implements addition on bitstrings represented as Vec<bool>
+//! big-endian order
 
-/// Converts a bitstring (Vec<bool>) to its integer value
-/// Uses MSB order (most significant bit first)
-pub fn str_to_int(s: &[bool]) -> u128 {
-    if s.is_empty() {
-        0
-    } else {
-        let first_bit = s[0];
-        let sub_seq = &s[1..];
-        (if first_bit { 1 } else { 0 }) * (2u128.pow(sub_seq.len() as u32)) + str_to_int(sub_seq)
-    }
-}
 
 /// Finds the index of the first non-zero bit starting from a given position
 fn find_first_nonzero(s: &[bool], start: usize) -> usize {
@@ -82,16 +71,6 @@ pub fn add(s1: &[bool], s2: &[bool]) -> Vec<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_str_to_int() {
-        assert_eq!(str_to_int(&[]), 0);
-        assert_eq!(str_to_int(&[false]), 0);
-        assert_eq!(str_to_int(&[true]), 1);
-        assert_eq!(str_to_int(&[true, false]), 2);
-        assert_eq!(str_to_int(&[true, true]), 3);
-        assert_eq!(str_to_int(&[true, false, true]), 5);
-    }
 
     #[test]
     fn test_normalize_bit_string() {
