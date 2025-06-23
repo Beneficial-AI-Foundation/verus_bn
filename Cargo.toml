@@ -7,7 +7,7 @@ edition = "2021"
 vstd = { git = "https://github.com/verus-lang/verus", rev = "9b557d70faab565829c0642c4d56609a44814d82" }
 builtin = { git = "https://github.com/verus-lang/verus", rev = "9b557d70faab565829c0642c4d56609a44814d82" }
 builtin_macros = { git = "https://github.com/verus-lang/verus", rev = "9b557d70faab565829c0642c4d56609a44814d82" }
-clap = { version = "4.4", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 
 [package.metadata.verus]
 verify = true
