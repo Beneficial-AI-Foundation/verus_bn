@@ -7,7 +7,9 @@ verus! {
 fn drop_from_slice(s: &[bool], start: usize) -> Vec<bool> {
     let mut result = Vec::new();
     let mut i = start;
-    while i < s.len() {
+    while i < s.len()
+        decreases s.len() - i
+    {
         result.push(s[i]);
         i += 1;
     }
@@ -18,14 +20,18 @@ fn drop_from_slice(s: &[bool], start: usize) -> Vec<bool> {
 fn take_from_slice(s: &[bool], n: usize) -> Vec<bool> {
     let mut result = Vec::new();
     let mut i = 0;
-    while i < n && i < s.len() {
+    while i < n && i < s.len()
+        decreases s.len() - i
+    {
         result.push(s[i]);
         i += 1;
     }
     result
 }
 /// Finds the index of the first non-zero bit starting from a given position
-fn find_first_nonzero(s: &[bool], start: usize) -> usize {
+fn find_first_nonzero(s: &[bool], start: usize) -> usize
+        decreases s.len()
+    {
     if start >= s.len() {
         s.len()
     } else if s[start] {
@@ -52,7 +58,9 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
 
 /// Helper function for addition that handles the carry bit
 /// Uses MSB order (most significant bit first)
-fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
+fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool>
+    decreases s1.len() + s2.len()
+    {
     if s1.len() == 0 && s2.len() == 0 {
         if carry == 0 {
             vec![false]
