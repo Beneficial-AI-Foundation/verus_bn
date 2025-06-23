@@ -61,16 +61,16 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
         }
     } else {
         let bit1: u8 = if !s1.is_empty() && s1[s1.len() -1 ] { 1 } else { 0 };
-        let rest1 = if !s1.is_empty() { &s1[..s1.len()-1] } else { &[] };
+        let rest1 = if !s1.is_empty() { take_from_slice(s1, s1.len()-1) } else { vec![] };
 
         let bit2: u8 = if !s2.is_empty() && s2[s2.len() -1 ] { 1 } else { 0 };
-        let rest2 = if !s2.is_empty() { &s2[..s2.len()-1] } else { &[] };
+        let rest2 = if !s2.is_empty() { take_from_slice(s2, s2.len()-1) } else { vec![] };
 
         let sum: u8 = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2 == 1;
         let new_carry: u8 = sum / 2;
 
-        let mut rest_result = add_helper(rest1, rest2, new_carry);
+        let mut rest_result = add_helper(&rest1, &rest2, new_carry);
         rest_result.push(new_bit);
         rest_result
     }
