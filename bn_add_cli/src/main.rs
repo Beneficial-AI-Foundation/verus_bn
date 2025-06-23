@@ -27,18 +27,16 @@ fn str_to_bitvec(s: &str) -> Vec<bool> {
 
 /// Convert a Vec<bool> to a string of '0's and '1's
 fn bitvec_to_str(v: &[bool]) -> String {
-    v.iter()
-        .map(|&b| if b { '1' } else { '0' })
-        .collect()
+    v.iter().map(|&b| if b { '1' } else { '0' }).collect()
 }
 
 fn main() {
     let args = Args::parse();
-    
+
     let first_bits = str_to_bitvec(&args.first);
     let second_bits = str_to_bitvec(&args.second);
-    
+
     let result = vec_add::add(&first_bits, &second_bits);
-    
+
     println!("{}", bitvec_to_str(&result));
 }
