@@ -4,7 +4,7 @@ use vstd::prelude::*;
 
 verus! {
 /// Creates a vector from a slice starting at a given index
-fn slice_to_vec(s: &[bool], start: usize) -> Vec<bool> {
+fn drop_from_slice(s: &[bool], start: usize) -> Vec<bool> {
     let mut result = Vec::new();
     let mut i = start;
     while i < s.len() {
@@ -34,7 +34,7 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
         if i == s.len() {
             vec![false]
         } else {
-            slice_to_vec(s, i)
+            drop_from_slice(s, i)
         }
     }
 }
