@@ -38,7 +38,7 @@ fn find_first_nonzero(s: &[bool], start: usize) -> usize {
 /// Normalizes a bitstring by removing leading zeros
 /// Returns a single zero bit if the input is all zeros or empty
 pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
-    if s.is_empty() {
+    if s.len() == 0 {
         vec![false]
     } else {
         let i = find_first_nonzero(s, 0);
@@ -53,18 +53,18 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
 /// Helper function for addition that handles the carry bit
 /// Uses MSB order (most significant bit first)
 fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
-    if s1.is_empty() && s2.is_empty() {
+    if s1.len() == 0 && s2.len() == 0 {
         if carry == 0 {
             vec![false]
         } else {
             vec![true]
         }
     } else {
-        let bit1: u8 = if !s1.is_empty() && s1[s1.len() -1 ] { 1 } else { 0 };
-        let rest1 = if !s1.is_empty() { take_from_slice(s1, s1.len()-1) } else { vec![] };
+        let bit1: u8 = if !(s1.len() == 0) && s1[s1.len() -1 ] { 1 } else { 0 };
+        let rest1 = if !(s1.len() == 0) { take_from_slice(s1, s1.len()-1) } else { vec![] };
 
-        let bit2: u8 = if !s2.is_empty() && s2[s2.len() -1 ] { 1 } else { 0 };
-        let rest2 = if !s2.is_empty() { take_from_slice(s2, s2.len()-1) } else { vec![] };
+        let bit2: u8 = if !(s2.len() == 0) && s2[s2.len() -1 ] { 1 } else { 0 };
+        let rest2 = if !(s2.len() == 0) { take_from_slice(s2, s2.len()-1) } else { vec![] };
 
         let sum: u8 = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2 == 1;
@@ -78,11 +78,11 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
 
 /// Adds two bitstrings and returns their sum as a normalized bitstring
 pub fn add(s1: &[bool], s2: &[bool]) -> Vec<bool> {
-    if s1.is_empty() && s2.is_empty() {
+    if s1.len() == 0 && s2.len() == 0 {
         vec![false]
-    } else if s1.is_empty() {
+    } else if s1.len() == 0 {
         normalize_bit_string(s2)
-    } else if s2.is_empty() {
+    } else if s2.len() == 0 {
         normalize_bit_string(s1)
     } else {
         let intermediate = add_helper(s1, s2, 0);
