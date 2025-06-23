@@ -49,28 +49,19 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
             vec![true]
         }
     } else {
-        let bit1: u8 = if !s1.is_empty() && s1[0] { 1 } else { 0 };
-        let rest1 = if !s1.is_empty() { &s1[1..] } else { &[] };
+        let bit1: u8 = if !s1.is_empty() && s1[s1.len() -1 ] { 1 } else { 0 };
+        let rest1 = if !s1.is_empty() { &s1[..s1.len()-1] } else { &[] };
 
-        let bit2: u8 = if !s2.is_empty() && s2[0] { 1 } else { 0 };
-        let rest2 = if !s2.is_empty() { &s2[1..] } else { &[] };
+        let bit2: u8 = if !s2.is_empty() && s2[s2.len() -1 ] { 1 } else { 0 };
+        let rest2 = if !s2.is_empty() { &s2[..s2.len()-1] } else { &[] };
 
         let sum: u8 = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2 == 1;
         let new_carry: u8 = sum / 2;
 
-        let mut result = Vec::new();
-        result.push(new_bit);
         let mut rest_result = add_helper(rest1, rest2, new_carry);
-        
-        // If the carry is non-zero and both inputs are empty, we need to include it
-        if new_carry > 0 && rest1.is_empty() && rest2.is_empty() {
-            result.push(true);
-        } else {
-            result.extend(rest_result);
-        }
-        
-        result
+        rest_result.push(new_bit);
+        rest_result
     }
 }
 
@@ -118,6 +109,12 @@ mod tests {
         // 1 + 1 = 2
         assert_eq!(add(&[true], &[true]), vec![true, false]);
         
+        // 2 + 0 = 0
+        assert_eq!(add(&[true, false], &[]), vec![true, false]);
+
+        // 2 + 0 = 0
+        assert_eq!(add(&[true, false], &[false]), vec![true, false]);
+
         // 2 + 1 = 3
         assert_eq!(add(&[true, false], &[true]), vec![true, true]);
         
@@ -125,7 +122,8 @@ mod tests {
         assert_eq!(add(&[true, false, true], &[true, true]), vec![true, false, false, false]);
         
         // Test with leading zeros
-        assert_eq!(add(&[false, true], &[true]), vec![true]);
+        // 0b01 + 0b1 = 0b10
+        assert_eq!(add(&[false, true], &[true]), vec![true, false]);
         
         // Test with empty arrays
         assert_eq!(add(&[], &[true, true]), vec![true, true]);
