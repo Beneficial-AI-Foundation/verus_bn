@@ -30,7 +30,7 @@ fn take_from_slice(s: &[bool], n: usize) -> Vec<bool> {
 }
 /// Finds the index of the first non-zero bit starting from a given position
 fn find_first_nonzero(s: &[bool], start: usize) -> usize
-        decreases s.len()
+        decreases s.len() - start
     {
     if start >= s.len() {
         s.len()
@@ -59,6 +59,7 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
 /// Helper function for addition that handles the carry bit
 /// Uses MSB order (most significant bit first)
 fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool>
+    requires carry == 1 || carry == 0
     decreases s1.len() + s2.len()
     {
     if s1.len() == 0 && s2.len() == 0 {
