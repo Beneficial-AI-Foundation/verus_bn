@@ -7,6 +7,13 @@ use vstd::slice::{slice_subrange, slice_to_vec};
 
 verus! {
 
+/// Checks if a slice is empty
+fn is_empty(s: &[bool]) -> (result: bool)
+    ensures result == (s.len() == 0)
+{
+    s.len() == 0
+}
+
 /// Finds the index of the first non-zero bit starting from a given position
 fn find_first_nonzero(s: &[bool], start: usize) -> (i: usize)
     ensures
@@ -26,7 +33,7 @@ fn find_first_nonzero(s: &[bool], start: usize) -> (i: usize)
 /// Normalizes a bitstring by removing leading zeros
 /// Returns a single zero bit if the input is all zeros or empty
 pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
-    if s.len() == 0 {
+    if is_empty(s) {
         vec![false]
     } else {
         let i = find_first_nonzero(s, 0);
@@ -45,18 +52,18 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool>
     requires carry == 1 || carry == 0
     decreases s1.len() + s2.len()
     {
-    if s1.len() == 0 && s2.len() == 0 {
+    if is_empty(s1) && is_empty(s2) {
         if carry == 0 {
             vec![false]
         } else {
             vec![true]
         }
     } else {
-        let bit1: u8 = if !(s1.len() == 0) && s1[s1.len() -1 ] { 1 } else { 0 };
-        let rest1 = if !(s1.len() == 0) { slice_subrange(s1, 0,  s1.len()-1) } else { &[] };
+        let bit1: u8 = if !is_empty(s1) && s1[s1.len() -1 ] { 1 } else { 0 };
+        let rest1 = if !is_empty(s1) { slice_subrange(s1, 0,  s1.len()-1) } else { &[] };
 
-        let bit2: u8 = if !(s2.len() == 0) && s2[s2.len() -1 ] { 1 } else { 0 };
-        let rest2 = if !(s2.len() == 0) { slice_subrange(s2, 0, s2.len()-1) } else { &[] };
+        let bit2: u8 = if !is_empty(s2) && s2[s2.len() -1 ] { 1 } else { 0 };
+        let rest2 = if !is_empty(s2) { slice_subrange(s2, 0, s2.len()-1) } else { &[] };
 
         let sum: u8 = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2 == 1;
@@ -70,11 +77,11 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool>
 
 /// Adds two bitstrings and returns their sum as a normalized bitstring
 pub fn add(s1: &[bool], s2: &[bool]) -> Vec<bool> {
-    if s1.len() == 0 && s2.len() == 0 {
+    if is_empty(s1) && is_empty(s2) {
         vec![false]
-    } else if s1.len() == 0 {
+    } else if is_empty(s1) {
         normalize_bit_string(s2)
-    } else if s2.len() == 0 {
+    } else if is_empty(s2) {
         normalize_bit_string(s1)
     } else {
         let intermediate = add_helper(s1, s2, 0);
