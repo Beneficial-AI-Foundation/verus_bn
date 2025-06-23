@@ -68,7 +68,7 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool>
         let new_bit: bool = sum % 2 == 1;
         let new_carry: u8 = sum / 2;
 
-        let mut rest_result = add_helper(&rest1, &rest2, new_carry);
+        let mut rest_result = add_helper(rest1, rest2, new_carry);
         rest_result.push(new_bit);
         rest_result
     }
