@@ -61,7 +61,15 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
 
         let mut result = Vec::new();
         result.push(new_bit);
-        result.extend(add_helper(rest1, rest2, new_carry));
+        let mut rest_result = add_helper(rest1, rest2, new_carry);
+        
+        // If the carry is non-zero and both inputs are empty, we need to include it
+        if new_carry > 0 && rest1.is_empty() && rest2.is_empty() {
+            result.push(true);
+        } else {
+            result.extend(rest_result);
+        }
+        
         result
     }
 }
