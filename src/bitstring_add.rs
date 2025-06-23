@@ -1,7 +1,8 @@
 //! This module implements addition on bitstrings represented as Vec<bool>
 //! big-endian order
+use vstd::prelude::*;
 
-
+verus! {
 /// Finds the index of the first non-zero bit starting from a given position
 fn find_first_nonzero(s: &[bool], start: usize) -> usize {
     if start >= s.len() {
@@ -67,6 +68,7 @@ pub fn add(s1: &[bool], s2: &[bool]) -> Vec<bool> {
         normalize_bit_string(&intermediate)
     }
 }
+}
 
 #[cfg(test)]
 mod tests {
@@ -77,17 +79,20 @@ mod tests {
         assert_eq!(normalize_bit_string(&[]), vec![false]);
         assert_eq!(normalize_bit_string(&[false, false]), vec![false]);
         assert_eq!(normalize_bit_string(&[false, true]), vec![true]);
-        assert_eq!(normalize_bit_string(&[false, false, true, false]), vec![true, false]);
+        assert_eq!(
+            normalize_bit_string(&[false, false, true, false]),
+            vec![true, false]
+        );
     }
 
     #[test]
     fn test_add() {
         // 0 + 0 = 0
         assert_eq!(add(&[false], &[false]), vec![false]);
-        
+
         // 1 + 1 = 2
         assert_eq!(add(&[true], &[true]), vec![true, false]);
-        
+
         // 2 + 0 = 0
         assert_eq!(add(&[true, false], &[]), vec![true, false]);
 
@@ -96,14 +101,17 @@ mod tests {
 
         // 2 + 1 = 3
         assert_eq!(add(&[true, false], &[true]), vec![true, true]);
-        
+
         // 5 + 3 = 8
-        assert_eq!(add(&[true, false, true], &[true, true]), vec![true, false, false, false]);
-        
+        assert_eq!(
+            add(&[true, false, true], &[true, true]),
+            vec![true, false, false, false]
+        );
+
         // Test with leading zeros
         // 0b01 + 0b1 = 0b10
         assert_eq!(add(&[false, true], &[true]), vec![true, false]);
-        
+
         // Test with empty arrays
         assert_eq!(add(&[], &[true, true]), vec![true, true]);
         assert_eq!(add(&[true, false, true], &[]), vec![true, false, true]);
