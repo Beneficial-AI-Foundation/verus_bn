@@ -64,8 +64,15 @@ version = "0.1.0"
 dependencies = [
  "builtin",
  "builtin_macros",
- "clap",
  "vstd",
+]
+
+[[package]]
+name = "bn_add_cli"
+version = "0.1.0"
+dependencies = [
+ "bn_add",
+ "clap",
 ]
 
 [[package]]
