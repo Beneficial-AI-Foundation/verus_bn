@@ -1,4 +1,4 @@
-use bn_add::bitstring_add;
+use bn_add::vec_add;
 use clap::Parser;
 
 /// CLI for adding binary numbers represented as strings
@@ -38,7 +38,7 @@ fn main() {
     let first_bits = str_to_bitvec(&args.first);
     let second_bits = str_to_bitvec(&args.second);
     
-    let result = bitstring_add::add(&first_bits, &second_bits);
+    let result = vec_add::add(&first_bits, &second_bits);
     
     println!("{}", bitvec_to_str(&result));
 }

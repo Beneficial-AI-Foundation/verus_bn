@@ -56,3 +56,18 @@ Currently, bignums are represented as `Seq<Char>` and we prove correctness for a
    ```bash
    cargo verus verify
    ```
+
+`make test` is shorthand for `cargo test && cargo verus verify`.
+
+## CLI
+To add 2 + 3, run
+``` bash
+cargo run -p bn_add_cli 10 11
+```
+
+Note that this calls `vec_add.rs`, which is not verified yet. 
+The CLI is in a different crate because otherwise Verus gave a hard-to-fix error:
+```
+error: extern location for bn_add does not exist
+```
+
