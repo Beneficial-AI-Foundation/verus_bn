@@ -2,13 +2,14 @@
 /// The algorithm is based on the one in bn_add_seq_bool.rs but without Verus-specific code
 
 /// Converts a bitstring (Vec<bool>) to its integer value
+/// Uses MSB order (most significant bit first)
 pub fn str_to_int(s: &[bool]) -> u128 {
     if s.is_empty() {
         0
     } else {
-        let sub_seq = &s[0..s.len() - 1];
-        let last_bit = s[s.len() - 1];
-        2 * str_to_int(sub_seq) + if last_bit { 1 } else { 0 }
+        let first_bit = s[0];
+        let sub_seq = &s[1..];
+        (if first_bit { 1 } else { 0 }) * (2u128.pow(sub_seq.len() as u32)) + str_to_int(sub_seq)
     }
 }
 
@@ -39,6 +40,7 @@ pub fn normalize_bit_string(s: &[bool]) -> Vec<bool> {
 }
 
 /// Helper function for addition that handles the carry bit
+/// Uses MSB order (most significant bit first)
 fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
     if s1.is_empty() && s2.is_empty() {
         if carry == 0 {
@@ -47,18 +49,19 @@ fn add_helper(s1: &[bool], s2: &[bool], carry: u8) -> Vec<bool> {
             vec![true]
         }
     } else {
-        let bit1: u8 = if !s1.is_empty() && s1[s1.len() - 1] { 1 } else { 0 };
-        let rest1 = if !s1.is_empty() { &s1[0..s1.len() - 1] } else { &[] };
+        let bit1: u8 = if !s1.is_empty() && s1[0] { 1 } else { 0 };
+        let rest1 = if !s1.is_empty() { &s1[1..] } else { &[] };
 
-        let bit2: u8 = if !s2.is_empty() && s2[s2.len() - 1] { 1 } else { 0 };
-        let rest2 = if !s2.is_empty() { &s2[0..s2.len() - 1] } else { &[] };
+        let bit2: u8 = if !s2.is_empty() && s2[0] { 1 } else { 0 };
+        let rest2 = if !s2.is_empty() { &s2[1..] } else { &[] };
 
         let sum: u8 = bit1 + bit2 + carry;
         let new_bit: bool = sum % 2 == 1;
         let new_carry: u8 = sum / 2;
 
-        let mut result = add_helper(rest1, rest2, new_carry);
+        let mut result = Vec::new();
         result.push(new_bit);
+        result.extend(add_helper(rest1, rest2, new_carry));
         result
     }
 }
@@ -108,13 +111,13 @@ mod tests {
         assert_eq!(add(&[true], &[true]), vec![true, false]);
         
         // 2 + 1 = 3
-        assert_eq!(add(&[false, true], &[true]), vec![true, true]);
+        assert_eq!(add(&[true, false], &[true]), vec![true, true]);
         
         // 5 + 3 = 8
         assert_eq!(add(&[true, false, true], &[true, true]), vec![true, false, false, false]);
         
         // Test with leading zeros
-        assert_eq!(add(&[false, true], &[true]), vec![true, true]);
+        assert_eq!(add(&[false, true], &[true]), vec![true]);
         
         // Test with empty arrays
         assert_eq!(add(&[], &[true, true]), vec![true, true]);
