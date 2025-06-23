@@ -13,6 +13,17 @@ fn drop_from_slice(s: &[bool], start: usize) -> Vec<bool> {
     }
     result
 }
+
+/// Creates a vector from the first n elements of a slice
+fn take_from_slice(s: &[bool], n: usize) -> Vec<bool> {
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < n && i < s.len() {
+        result.push(s[i]);
+        i += 1;
+    }
+    result
+}
 /// Finds the index of the first non-zero bit starting from a given position
 fn find_first_nonzero(s: &[bool], start: usize) -> usize {
     if start >= s.len() {
