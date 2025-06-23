@@ -1,6 +1,7 @@
 //! This module implements addition on bitstrings represented as Vec<bool>
 //! big-endian order
 use vstd::prelude::*;
+use vstd::math::min;
 
 verus! {
 /// Creates a vector from a slice starting at a given index
@@ -16,12 +17,19 @@ fn drop_from_slice(s: &[bool], start: usize) -> Vec<bool> {
     result
 }
 
+
+
 /// Creates a vector from the first n elements of a slice
-fn take_from_slice(s: &[bool], n: usize) -> Vec<bool> {
+fn take_from_slice(s: &[bool], n: usize) -> (t: Vec<bool>)
+    ensures t.len() == min(s.len() as int, n as int)
+{
     let mut result = Vec::new();
     let mut i = 0;
     while i < n && i < s.len()
-        decreases s.len() - i
+        invariant result.len() == i,
+                  i <= s.len(),
+                  i <= n,
+        decreases s.len() - i,
     {
         result.push(s[i]);
         i += 1;
