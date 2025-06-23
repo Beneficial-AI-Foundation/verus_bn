@@ -1,8 +1,6 @@
 //! This module implements addition on bitstrings represented as Vec<bool>
 //! big-endian order
 use vstd::prelude::*;
-
-use vstd::math;
 use vstd::slice::{slice_subrange, slice_to_vec};
 
 verus! {
