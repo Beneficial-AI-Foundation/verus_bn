@@ -129,6 +129,29 @@ verus! {
         }
     }
 
+    proof fn seq_to_int_one_singleton()
+        ensures
+            seq_to_int(seq![(1u64)]) == 1nat,
+    {
+        let s = seq![(1u64)];
+        calc! {
+            (==)
+            seq_to_int(s);
+            { seq_to_int_nonempty(s); }
+            seq_to_int(s.subrange(0, s.len() as int - 1)) * pow2(64) + (s[s.len() as int - 1] as nat);
+            { 
+                assert(s.len() as int - 1 == 0);
+                assert(s.subrange(0, 0).len() == 0);
+                seq_to_int_empty(s.subrange(0, 0));
+            }
+            0nat * pow2(64) + (1u64 as nat);
+            { assert(0nat * pow2(64) == 0nat); }
+            0nat + 1nat;
+            { assert(0nat + 1nat == 1nat); }
+            1nat;
+        }
+    }
+
     proof fn seq_to_int_mul_pow2_64(s: Seq<u64>)
         ensures
             seq_to_int(s) * pow2(64) == seq_to_int(s.push(0u64)),
@@ -204,8 +227,8 @@ verus! {
                     { assert(last_word_value == 0nat); }
                     sub_seq_value * pow2(64);
                     { assert(sub_seq_value == seq_to_int(normalize_u64_seq(sub_seq))); }
-                    /*seq_to_int(normalize_u64_seq(sub_seq)) * pow2(64);
-                    { 
+                    seq_to_int(normalize_u64_seq(sub_seq)) * pow2(64);
+                    /*{ 
                         normalize_u64_seq_trailing_zero(s);
                         seq_to_int_mul_pow2_64(normalize_u64_seq(sub_seq));
                     }
@@ -248,6 +271,90 @@ verus! {
         }
     }
 
+    proof fn add_with_carry_sequence_arithmetic(s1: Seq<u64>, s2: Seq<u64>, carry: bool)
+        requires
+            s1.len() > 0 || s2.len() > 0,
+        ensures
+            ({
+                let word1: u64 = if s1.len() > 0 { s1[s1.len() as int - 1] } else { 0u64 };
+                let rest1: Seq<u64> = if s1.len() > 0 { s1.subrange(0, s1.len() as int - 1) } else { seq![] };
+                let word2: u64 = if s2.len() > 0 { s2[s2.len() as int - 1] } else { 0u64 };
+                let rest2: Seq<u64> = if s2.len() > 0 { s2.subrange(0, s2.len() as int - 1) } else { seq![] };
+                let (sum, new_carry) = add_with_carry(word1, word2, carry);
+                (seq_to_int(rest1) + seq_to_int(rest2) + (if new_carry { 1nat } else { 0nat })) * pow2(64) + (sum as nat)
+            }) == seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat }),
+    {
+        let word1: u64 = if s1.len() > 0 { s1[s1.len() as int - 1] } else { 0u64 };
+        let rest1: Seq<u64> = if s1.len() > 0 { s1.subrange(0, s1.len() as int - 1) } else { seq![] };
+        let word2: u64 = if s2.len() > 0 { s2[s2.len() as int - 1] } else { 0u64 };
+        let rest2: Seq<u64> = if s2.len() > 0 { s2.subrange(0, s2.len() as int - 1) } else { seq![] };
+        let (sum, new_carry) = add_with_carry(word1, word2, carry);
+
+        // Prove relationship for s1
+        if s1.len() > 0 {
+            seq_to_int_nonempty(s1);
+            assert(seq_to_int(s1) == seq_to_int(rest1) * pow2(64) + (word1 as nat));
+        } else {
+            assert(seq_to_int(s1) == 0nat);
+            assert(word1 == 0u64);
+            assert(rest1 =~= seq![]);
+            seq_to_int_empty(rest1);
+        }
+
+        // Prove relationship for s2
+        if s2.len() > 0 {
+            seq_to_int_nonempty(s2);
+            assert(seq_to_int(s2) == seq_to_int(rest2) * pow2(64) + (word2 as nat));
+        } else {
+            assert(seq_to_int(s2) == 0nat);
+            assert(word2 == 0u64);
+            assert(rest2 =~= seq![]);
+            seq_to_int_empty(rest2);
+        }
+
+        // By definition of add_with_carry
+        let sum_big = (word1 as nat) + (word2 as nat) + (if carry { 1nat } else { 0nat });
+        
+        // From the definition of add_with_carry
+        assert({
+            let (s, c) = add_with_carry(word1, word2, carry);
+            s == ((sum_big % pow2(64)) as u64) && c == (sum_big >= pow2(64))
+        });
+        
+        assert(sum == ((sum_big % pow2(64)) as u64));
+        assert(new_carry == (sum_big >= pow2(64)));
+
+        //assume(seq_to_int(rest1) + seq_to_int(rest2) + (if new_carry { 1nat } else { 0nat }) * pow2(64) + (sum as nat) == seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat }));// by(nonlinear_arith);
+        //assume((seq_to_int(rest1) + seq_to_int(rest2) + (if new_carry { 1nat } else { 0nat })) * pow2(64) + (sum as nat)
+        //== seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat }));
+        
+        calc! {
+            (==)
+            (seq_to_int(rest1) + seq_to_int(rest2) + (if new_carry { 1nat } else { 0nat })) * pow2(64) + (sum as nat);
+            {
+                 
+                assert(sum_big == (word1 as nat) + (word2 as nat) + (if carry { 1nat } else { 0nat }));
+                //assert(sum as nat == sum_big % pow2(64));
+                
+                // Expand the left side
+                assert(seq_to_int(s1) == seq_to_int(rest1) * pow2(64) + (word1 as nat));
+                assert(seq_to_int(s2) == seq_to_int(rest2) * pow2(64) + (word2 as nat));
+                
+                // Show that the carry bit handling is correct
+                if new_carry {
+                    assert(sum_big >= pow2(64));
+                    assert(sum_big == pow2(64) + (sum as nat));
+                } else {
+                    assert(sum_big < pow2(64));
+                    assert(sum_big == sum as nat);
+                }
+                
+                
+            }
+            seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat });
+        }
+    }  
+
     proof fn add_helper_correctness(s1: Seq<u64>, s2: Seq<u64>, carry: bool)
         ensures
             seq_to_int(add_helper(s1, s2, carry)) == seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat }),
@@ -259,10 +366,12 @@ verus! {
             assert(seq_to_int(s2) == 0nat);
             if carry {
                 assert(add_helper(s1, s2, carry) == seq![(1u64)]);
-                assume(seq_to_int(add_helper(s1, s2, carry)) == 1nat);
+                seq_to_int_one_singleton();
+                assert(seq_to_int(add_helper(s1, s2, carry)) == 1nat);
             } else {
-                assume(add_helper(s1, s2, carry) == seq![(0u64)]);
-                assume(seq_to_int(add_helper(s1, s2, carry)) == 0nat);
+                assert(add_helper(s1, s2, carry) == seq![(0u64)]);
+                seq_to_int_zero_singleton();
+                assert(seq_to_int(add_helper(s1, s2, carry)) == 0nat);
             }
         } else {
             // Recursive case
@@ -273,30 +382,36 @@ verus! {
             let rest2: Seq<u64> = if s2.len() > 0 { s2.subrange(0, s2.len() as int - 1) } else { seq![] };
             
             let (sum, new_carry) = add_with_carry(word1, word2, carry);
-            let result = add_helper(s1, s2, carry);
-            
+            let result = add_helper(rest1, rest2, new_carry).push(sum);
+
+            // Prove that s1 and rest1 are related
+            if s1.len() > 0 {
+                seq_to_int_nonempty(s1);
+                assert(seq_to_int(s1) == seq_to_int(rest1) * pow2(64) + (word1 as nat));
+            } else {
+                assert(seq_to_int(s1) == 0nat);
+            }
+
+            // Prove that s2 and rest2 are related
+            if s2.len() > 0 {
+                seq_to_int_nonempty(s2);
+                assert(seq_to_int(s2) == seq_to_int(rest2) * pow2(64) + (word2 as nat));
+            } else {
+                assert(seq_to_int(s2) == 0nat);
+            }
+
             // Recursive call
             add_helper_correctness(rest1, rest2, new_carry);
-            assume(seq_to_int(result) == seq_to_int(s1) + seq_to_int(s2) + (if new_carry { 1nat } else { 0nat }));
+
             // Prove value preservation
-            
             calc! {
                 (==)
                 seq_to_int(result);
-                { assert(result == add_helper(s1, s2, carry)); }
-                seq_to_int(add_helper(rest1, rest2, new_carry).push(sum));
                 { seq_to_int_push(add_helper(rest1, rest2, new_carry), sum); }
-                (seq_to_int(add_helper(rest1, rest2, new_carry)) * pow2(64)) + (sum as nat);
-                { add_helper_correctness(rest1, rest2, new_carry); }
-                ((seq_to_int(rest1) + seq_to_int(rest2) + (if new_carry { 1nat } else { 0nat })) * pow2(64)) + (sum as nat);
-                { 
-                    // TODO: Need to prove that this step preserves the value
-                    assume(((seq_to_int(rest1) + seq_to_int(rest2) + (if new_carry { 1nat } else { 0nat })) * pow2(64)) + (sum as nat)
-                        == seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat }));
-                }
+                seq_to_int(add_helper(rest1, rest2, new_carry)) * pow2(64) + (sum as nat);
+                { add_with_carry_sequence_arithmetic(s1, s2, carry); }
                 seq_to_int(s1) + seq_to_int(s2) + (if carry { 1nat } else { 0nat });
             }
-            
         }
     }
 
