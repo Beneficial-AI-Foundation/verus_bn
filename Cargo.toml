@@ -3,6 +3,11 @@ name = "bn_add"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [
+    "bn_add_cli"
+]
+
 [dependencies]
 vstd = { git = "https://github.com/verus-lang/verus", rev = "9b557d70faab565829c0642c4d56609a44814d82" }
 builtin = { git = "https://github.com/verus-lang/verus", rev = "9b557d70faab565829c0642c4d56609a44814d82" }
