@@ -106,6 +106,36 @@ verus! {
         seq_to_int_extensionality(result.subrange(0, result.len() as int - 1), s);
     }
 
+    proof fn seq_to_int_zero_singleton()
+        ensures
+            seq_to_int(seq![(0u64)]) == 0nat,
+    {
+        let s = seq![(0u64)];
+        calc! {
+            (==)
+            seq_to_int(s);
+            { seq_to_int_nonempty(s); }
+            seq_to_int(s.subrange(0, s.len() as int - 1)) * pow2(64) + (s[s.len() as int - 1] as nat);
+            { 
+                assert(s.len() as int - 1 == 0);
+                assert(s.subrange(0, 0).len() == 0);
+                seq_to_int_empty(s.subrange(0, 0));
+            }
+            0nat * pow2(64) + (0u64 as nat);
+            { assert(0nat * pow2(64) == 0nat); }
+            0nat + 0nat;
+            { assert(0nat + 0nat == 0nat); }
+            0nat;
+        }
+    }
+
+    proof fn seq_to_int_mul_pow2_64(s: Seq<u64>)
+        ensures
+            seq_to_int(s) * pow2(64) == seq_to_int(s.push(0u64)),
+    {
+        seq_to_int_push(s, 0u64);
+    }
+
     spec fn normalize_u64_seq(s: Seq<u64>) -> (result: Seq<u64>)
         decreases s.len()
     {
@@ -125,6 +155,19 @@ verus! {
         }
     }
 
+    proof fn normalize_u64_seq_trailing_zero(s: Seq<u64>)
+        requires
+            s.len() > 1,
+            s[s.len() as int - 1] == 0u64,
+        ensures
+            normalize_u64_seq(s) == normalize_u64_seq(s.subrange(0, s.len() as int - 1)),
+    {
+        let sub_seq = s.subrange(0, s.len() as int - 1);
+        assert(s[s.len() as int - 1] == 0u64);
+        // By definition of normalize_u64_seq, when last word is 0,
+        // we recursively normalize without it
+    }
+
     proof fn normalize_u64_seq_valid(s: Seq<u64>)
         ensures
             normalize_u64_seq(s).len() > 0,
@@ -136,17 +179,18 @@ verus! {
         if s.len() == 0 {
             assert(result == seq![(0u64)]);
             assert(seq_to_int(s) == 0nat);
-            assume(seq_to_int(result) == 0nat);
+            seq_to_int_zero_singleton();
+            assert(seq_to_int(result) == 0nat);
         } else if s.len() == 1 {
-            assume(result == s);
-            assume(seq_to_int(s) == seq_to_int(normalize_u64_seq(s)));
+            assert(result == s);
+            assert(seq_to_int(s) == seq_to_int(normalize_u64_seq(s)));
         } else {
             if s[s.len() as int - 1] == 0u64 {
                 // Recursive case: last word is zero
                 let sub_seq = s.subrange(0, s.len() as int - 1);
                 normalize_u64_seq_valid(sub_seq);
-                //assume(seq_to_int(result) == seq_to_int(normalize_u64_seq(sub_seq)));
-                assume(seq_to_int(s) == seq_to_int(normalize_u64_seq(s)));
+                normalize_u64_seq_trailing_zero(s);
+                
                 // Prove that removing trailing zeros preserves the value
                 let sub_seq_value = seq_to_int(sub_seq);
                 let last_word_value = s[s.len() as int - 1] as nat;
@@ -157,8 +201,19 @@ verus! {
                     seq_to_int(s.subrange(0, s.len() as int - 1)) * pow2(64) + (s[s.len() as int - 1] as nat); 
                     { assert(s.subrange(0, s.len() as int - 1) =~= sub_seq); }
                     sub_seq_value * pow2(64) + last_word_value;
+                    { assert(last_word_value == 0nat); }
+                    sub_seq_value * pow2(64);
+                    { assert(sub_seq_value == seq_to_int(normalize_u64_seq(sub_seq))); }
+                    /*seq_to_int(normalize_u64_seq(sub_seq)) * pow2(64);
+                    { 
+                        normalize_u64_seq_trailing_zero(s);
+                        seq_to_int_mul_pow2_64(normalize_u64_seq(sub_seq));
+                    }
+                    seq_to_int(normalize_u64_seq(s));*/
                 }
                 
+                assume(seq_to_int(s) == seq_to_int(normalize_u64_seq(s)));
+
             } else {
                 // Non-recursive case: last word is non-zero
                 //assume(result == s);
